@@ -1,0 +1,2 @@
+D:/flutter apps/fuelnow/android/app/.cxx/Debug/l4i4z591/x86/CMakeFiles/edit_cache.dir
+D:/flutter apps/fuelnow/android/app/.cxx/Debug/l4i4z591/x86/CMakeFiles/rebuild_cache.dir
