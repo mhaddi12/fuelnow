@@ -1,9 +1,12 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:fuelnow/view_models/auth_view_model.dart';
 import 'package:go_router/go_router.dart';
+
+import '../providers/auth_provider.dart';
+import '../widgets/logout_alert.dart';
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
@@ -16,18 +19,17 @@ class _HomeViewState extends ConsumerState<HomeView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
+    final notifier = ref.read(signUpNotifierProvider.notifier);
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // Welcome Header
-            // SliverAppBar(backgroundColor: theme.colorScheme.background),
+            // Welcome Header with Logout
             SliverAppBar(
               automaticallyImplyLeading: false,
-              toolbarHeight: 130,
-              backgroundColor: theme.colorScheme.background,
+              toolbarHeight: 135.0,
+              backgroundColor: theme.colorScheme.surface,
               flexibleSpace: FlexibleSpaceBar(
                 background: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -49,14 +51,45 @@ class _HomeViewState extends ConsumerState<HomeView> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text('Haddi', style: theme.textTheme.headlineSmall),
+                          Text(
+                            'Haddi',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
-                      const CircleAvatar(
-                        radius: 30,
-                        backgroundImage: NetworkImage(
-                          'https://cdn-icons-png.flaticon.com/512/6100/6100027.png',
-                        ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const CircleAvatar(
+                            radius: 28,
+                            backgroundImage: NetworkImage(
+                              'https://cdn-icons-png.flaticon.com/512/6100/6100027.png',
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          TextButton.icon(
+                            onPressed: () => _handleLogout(notifier),
+                            icon: Icon(
+                              Icons.logout,
+                              size: 18,
+                              color: theme.colorScheme.error,
+                            ),
+                            label: Text(
+                              'Logout',
+                              style: TextStyle(
+                                color: theme.colorScheme.error,
+                                fontSize: 12,
+                              ),
+                            ),
+                            style: TextButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -108,10 +141,11 @@ class _HomeViewState extends ConsumerState<HomeView> {
               ),
             ),
 
+            // Add Fuel Entry Button
             SliverAppBar(
               automaticallyImplyLeading: false,
               pinned: true,
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: theme.colorScheme.surface,
               toolbarHeight: 80,
               title: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -135,10 +169,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
             ),
 
             // Fuel Stats Section
-
-            // End filler
             SliverFillRemaining(
-              //hasScrollBody: false,
               fillOverscroll: true,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -211,7 +242,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                           x: index,
                                           barRods: [
                                             BarChartRodData(
-                                              toY: Random().nextDouble() * 10 + 5, // Random double between 5 and 15
+                                              toY:
+                                                  Random().nextDouble() * 10 +
+                                                  5,
                                               color: theme.colorScheme.primary,
                                               width: 18,
                                             ),
@@ -229,7 +262,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
                       // Additional Insights
                       Padding(
-                        padding: EdgeInsets.all(16.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -260,6 +293,25 @@ class _HomeViewState extends ConsumerState<HomeView> {
           ],
         ),
       ),
+    );
+  }
+
+  void _handleLogout(SignUpNotifier notifier) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder:
+          (context) => LogoutAlertDialog(
+            onConfirm: () {
+              notifier.logout();
+              // Your logout logic here
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Successfully logged out.")),
+              );
+              GoRouter.of(context).go('/login');
+              // Navigate or call logout logic
+            },
+          ),
     );
   }
 

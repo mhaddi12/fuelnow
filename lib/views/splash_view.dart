@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -13,6 +14,7 @@ class _SplashViewState extends State<SplashView>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
+  final _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
@@ -36,9 +38,15 @@ class _SplashViewState extends State<SplashView>
         context.go('/login'); // <-- change route if needed
       });
     } else {
-      Future.delayed(const Duration(seconds: 3), () {
-        context.go('/home'); // <-- change route if needed
-      });
+      if (_auth.currentUser!.emailVerified) {
+        Future.delayed(const Duration(seconds: 3), () {
+          context.go('/home'); // <-- change route if needed
+        });
+      } else {
+        Future.delayed(const Duration(seconds: 3), () {
+          context.go('/verify-account'); // <-- change route if needed
+        });
+      }
     }
   }
 

@@ -1,4 +1,6 @@
 // sign_up_notifier.dart
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -64,10 +66,22 @@ class SignUpNotifier extends StateNotifier<SignUpFormState> {
     state = state.copyWith(isSubmitting: true, errorMessage: '');
 
     try {
-      await _auth.createUserWithEmailAndPassword(
-        email: state.email,
-        password: state.password,
-      );
+      await _auth
+          .createUserWithEmailAndPassword(
+            email: state.email,
+            password: state.password,
+          )
+          .then((value) {
+            value.user!.sendEmailVerification();
+          })
+          .onError((error, stackTrace) {
+            debugPrint(error.toString());
+
+            state = state.copyWith(
+              isSubmitting: false,
+              errorMessage: error.toString(),
+            );
+          });
 
       // On success
       state = state.copyWith(
@@ -129,10 +143,12 @@ class SignUpNotifier extends StateNotifier<SignUpFormState> {
         errorMessage: '',
       );
 
-      GoRouter.of(context).push('/home');
-
+      if (_auth.currentUser!.emailVerified) {
+        GoRouter.of(context).push('/home');
+      } else {
+        GoRouter.of(context).push('/verify-account');
+      }
       preferences.setString('token', _auth.currentUser!.uid);
-
     } on FirebaseAuthException catch (e) {
       String message = 'Login failed. Please try again.';
       debugPrint(e.code);
@@ -158,5 +174,11 @@ class SignUpNotifier extends StateNotifier<SignUpFormState> {
         errorMessage: 'Something went wrong. Please try again later.',
       );
     }
+  }
+
+  Future<void> logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove('token');
+    await _auth.signOut();
   }
 }

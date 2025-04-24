@@ -6,6 +6,8 @@ import '../views/sign_up_view.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../views/verify_account.dart';
+
 final GoRouter router = GoRouter(
   initialLocation: '/',
   routes: <RouteBase>[
@@ -31,6 +33,12 @@ final GoRouter router = GoRouter(
       path: '/home',
       builder: (BuildContext context, GoRouterState state) {
         return const HomeView();
+      },
+    ),
+    GoRoute(
+      path: '/verify-account',
+      builder: (BuildContext context, GoRouterState state) {
+        return EmailVerificationScreen();
       },
     ),
   ],
